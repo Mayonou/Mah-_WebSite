@@ -1,398 +1,781 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Portfolio — Monteur Vidéo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300&display=swap" rel="stylesheet"/>
+  <title>Mahé Richard-Schmidt — Monteur Vidéo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400&family=Outfit:wght@100;200&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --white: #fafaf8;
-      --ink:   #111110;
-      --muted: #999990;
-      --accent:#c8b89a;
-      --line:  #ddddd5;
-      --bar-h: 120px;
+      --bg: #0a0a09;
+      --white: #f0ede8;
+      --muted: #555550;
+      --accent: #c8b89a;
+      --line: #1e1e1c;
     }
 
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: var(--white);
+    html { scroll-behavior: auto; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
       font-family: 'DM Mono', monospace;
-      color: var(--ink);
       cursor: none;
+      overflow-x: hidden;
     }
-    a, button, iframe {cursor: none;}
 
-    /* ── Cursor ── */
+    /* ── Custom cursor ── */
     #cursor {
-  position: fixed;
-  z-index: 9999;
-  width: 40px;
-  height: 40px;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  mix-blend-mode: difference;
-}
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      left: -80px; top: -80px;
+      transform: translate(-50%, -50%);
+      transition: width .2s ease, height .2s ease;
+    }
+    #cursor::before, #cursor::after {
+      content: "";
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 32px; height: 2px;
+      background: rgba(255,255,255,0.9);
+      transform-origin: center;
+    }
+    #cursor::before { transform: translate(-50%, -50%) rotate(45deg); }
+    #cursor::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+    #cursor.hover::before { width: 20px; }
+    #cursor.hover::after  { width: 20px; }
 
-    #cursor::before,
-#cursor::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 3px;
-  background: rgba(255,255,255,0.8);
-  transform-origin: center;
-}
-
-    #cursor::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-#cursor::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-    
-    /* ── Layout shell ── */
-    #shell {
-      position: fixed; inset: 0;
-      display: flex; flex-direction: column;
+    /* ── Sticky name layer ── */
+    #name-wrap {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+    #name-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(120px, 18vw, 260px);
+      letter-spacing: .04em;
+      color: var(--white);
+      mix-blend-mode: overlay;
+      opacity: .18;
+      white-space: nowrap;
+      will-change: transform;
+      /* starts centered, moves up on scroll */
+      transform: translateY(0px);
     }
 
     /* ── Header ── */
     #hdr {
-      height: var(--bar-h);
-      flex-shrink: 0;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
-      padding: 0 48px;
-      border-bottom: 1px solid var(--line);
-      animation: fadeDown .7s cubic-bezier(.23,1,.32,1) both;
+      padding: 28px 48px;
+      mix-blend-mode: normal;
     }
-    @keyframes fadeDown {
-      from { opacity:0; transform:translateY(-14px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    /* 4. Nouvelle police pour le nom — Outfit, légère, sans italique */
-    .hdr-name {
+    .hdr-title {
       font-family: 'Outfit', sans-serif;
-      font-weight: 200;
-      font-size: 1.3rem;
-      letter-spacing: .08em;
+      font-weight: 100;
+      font-size: .72rem;
+      letter-spacing: .18em;
       text-transform: uppercase;
-      line-height: 1.15;
-    }
-    .hdr-name small {
-      display: block;
-      font-family: 'DM Mono', monospace;
-      font-size: .58rem; font-weight: 300;
-      letter-spacing: .14em; text-transform: uppercase;
-      color: var(--muted); margin-top: 6px;
+      color: var(--accent);
     }
     .hdr-contact {
-      font-size: .7rem; color: var(--muted);
-      letter-spacing: .05em; line-height: 2;
+      font-size: .62rem;
+      letter-spacing: .08em;
+      color: var(--muted);
       text-align: right;
+      line-height: 1.9;
     }
     .hdr-contact a { color: inherit; text-decoration: none; transition: color .2s; }
-    .hdr-contact a:hover { color: var(--ink); }
+    .hdr-contact a:hover { color: var(--white); }
 
-    /* ── Accordion zone ── */
-    #acc-wrap {
-      flex: 1;
+    /* ── Scroll container ── */
+    #projects {
+      padding-top: 0;
+    }
+
+    /* ── Project strip ── */
+    .project {
       position: relative;
+      width: 100%;
+      /* 32/9 aspect ratio */
+      aspect-ratio: 32 / 9;
       overflow: hidden;
+      cursor: none;
+      border-bottom: 1px solid var(--line);
+      transition: aspect-ratio .55s cubic-bezier(.23,1,.32,1);
     }
 
-    /* ── Panels container ── */
-    #acc {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: row;
+    .project:first-child { border-top: 1px solid var(--line); }
+
+    /* Hover: taller strip */
+    .project:hover {
+      aspect-ratio: 32 / 12;
     }
 
-    /* ── Individual panel ── */
-    .panel {
-      position: relative;
-      height: 100%;
-      overflow: hidden;
-      flex-shrink: 0;
-      transition: width .55s cubic-bezier(.23,1,.32,1);
-      border-right: 1px solid rgba(255,255,255,0.15);
-    }
-    .panel:last-child { border-right: none; }
-
-    /* 2. Bloc couleur dégradé (remplace la miniature) */
-    .panel-color {
-      position: absolute; inset: 0; z-index: 2;
-      transition: opacity .45s ease;
-    }
-    .panel.active .panel-color { opacity: 0; pointer-events: none; }
-
-    /* iframe */
-    .panel-iframe { position: absolute; inset: 0; z-index: 1; }
-    .panel-iframe iframe {
-      width: 100%; height: 100%;
-      border: none; display: block;
-      pointer-events: none;
-    }
-    .panel-iframe iframe {pointer-events: none;}
-
-    /* 3. Titre vertical — blanc avec contour noir */
-    .panel-vlabel {
+    /* Video / media fill */
+    .project-media {
       position: absolute;
-      bottom: 36px; left: 50%;
-      transform: translateX(-50%) rotate(180deg);
-      writing-mode: vertical-rl;
-      font-size: .90rem; letter-spacing: .13em;
-      text-transform: uppercase;
-      color: #ffffff;
-      text-shadow: 
-        -1px -1px 0 rgba(0,0,0,0.9),
-         1px -1px 0 rgba(0,0,0,0.9),
-        -1px  1px 0 rgba(0,0,0,0.9),
-         1px  1px 0 rgba(0,0,0,0.9),
-        -1px  0   0 rgba(0,0,0,0.9),
-         1px  0   0 rgba(0,0,0,0.9),
-         0   -1px 0 rgba(0,0,0,0.9),
-         0    1px 0 rgba(0,0,0,0.9);
-      white-space: nowrap; z-index: 6;
-      transition: opacity .3s ease;
-      pointer-events: none;
-      max-height: 55%;
-      overflow: hidden;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      /* slight scale so edges don't show on hover expand */
+      transform: scale(1.03);
+      transition: transform .6s cubic-bezier(.23,1,.32,1), filter .4s ease;
+      filter: brightness(.75) saturate(.9);
     }
-    .panel.active .panel-vlabel { opacity: 0; }
-
-    /* Accent line */
-    .panel::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 2px; background: var(--accent);
-      transform: scaleX(0); transform-origin: left;
-      transition: transform .5s cubic-bezier(.23,1,.32,1);
-      z-index: 10;
+    .project:hover .project-media {
+      transform: scale(1.0);
+      filter: brightness(.55) saturate(1.1);
     }
-    .panel.active::after { transform: scaleX(1); }
 
-    /* ── Info bar ── */
-    #info {
-      height: var(--bar-h);
-      flex-shrink: 0;
+    /* Overlay gradient */
+    .project-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(10,10,9,.7) 0%,
+        rgba(10,10,9,.0) 40%,
+        rgba(10,10,9,.0) 60%,
+        rgba(10,10,9,.4) 100%
+      );
+      z-index: 2;
+      transition: opacity .4s ease;
+    }
+    .project:hover .project-overlay { opacity: .6; }
+
+    /* Project info */
+    .project-info {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 3;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
-      padding: 0 48px;
-      border-top: 1px solid var(--line);
-      pointer-events: none;
+      padding: 24px 48px;
     }
-    #info-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300; font-style: italic;
-      font-size: clamp(1.3rem, 2.2vw, 2rem);
-      letter-spacing: -.01em;
-      opacity: 0; transform: translateY(6px);
-      transition: opacity .35s ease, transform .35s ease;
-      flex: 1;
+    .project-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 3.2rem);
+      letter-spacing: .06em;
+      color: var(--white);
+      line-height: 1;
+      transform: translateY(4px);
+      transition: transform .35s ease, opacity .35s ease;
+      opacity: .85;
     }
-    #info-title.on { opacity: 1; transform: translateY(0); }
-
-    /* 1. Zone artiste — centre */
-    #info-artist {
-      font-family: 'DM Mono', monospace;
-      font-weight: 300;
-      font-size: .70rem;
+    .project:hover .project-title {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .project-meta {
+      font-size: .62rem;
       letter-spacing: .12em;
       text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      flex: 1;
-      opacity: 0; transform: translateY(6px);
-      transition: opacity .35s ease .08s, transform .35s ease .08s;
-    }
-    #info-artist.on { opacity: 1; transform: translateY(0); }
-
-    #info-meta {
-      font-size: .68rem; color: var(--muted);
-      letter-spacing: .09em; text-transform: uppercase;
-      text-align: right; line-height: 2;
-      flex: 1;
-      opacity: 0; transform: translateY(6px);
+      color: var(--accent);
+      text-align: right;
+      line-height: 2;
+      opacity: 0;
+      transform: translateY(6px);
       transition: opacity .35s ease .05s, transform .35s ease .05s;
     }
-    #info-meta.on { opacity: 1; transform: translateY(0); }
-
-    /* Load animation */
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(18px); }
-      to   { opacity:1; transform:translateY(0); }
+    .project:hover .project-meta {
+      opacity: 1;
+      transform: translateY(0);
     }
-    .panel { animation: fadeUp .65s cubic-bezier(.23,1,.32,1) both; }
+
+    /* Click arrow indicator */
+    .project-cta {
+      position: absolute;
+      top: 50%; right: 48px;
+      transform: translateY(-50%) translateX(8px);
+      z-index: 4;
+      font-size: .58rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--white);
+      opacity: 0;
+      transition: opacity .3s ease .1s, transform .3s ease .1s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .project-cta::after {
+      content: '→';
+      font-size: 1.1rem;
+    }
+    .project:hover .project-cta {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    /* ── Index numbers ── */
+    .project-index {
+      position: absolute;
+      top: 22px; left: 48px;
+      z-index: 4;
+      font-size: .58rem;
+      letter-spacing: .14em;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+    .project:hover .project-index { opacity: 1; }
+
+    /* ── Footer gap ── */
+    #footer {
+      height: 40px;
+      border-top: none;
+    }
+
   </style>
 </head>
 <body>
 
 <div id="cursor"></div>
 
-<div id="shell">
-
-  <!-- Header -->
-  <header id="hdr">
-    <div class="hdr-name">
-      Mahé RICHARD-SCHMIDT
-      <small>Monteur vidéo</small>
-    </div>
-    <div class="hdr-contact">
-      <a href="mailto:maherichardschmidt@gmail.com">maherichardschmidt@gmail.com</a><br>
-      <a href="tel:+33671451971">+33 6 71 45 19 71</a>
-    </div>
-  </header>
-
-  <!-- Accordion -->
-  <div id="acc-wrap">
-    <div id="acc"></div>
-  </div>
-
-  <!-- Info bar -->
-  <div id="info">
-    <div id="info-title"></div>
-    <div id="info-artist"></div>
-    <div id="info-meta"></div>
-  </div>
-
+<!-- Floating name -->
+<div id="name-wrap">
+  <div id="name-text">MAHÉ</div>
 </div>
 
+<!-- Header -->
+<header id="hdr">
+  <div class="hdr-title">Monteur Vidéo</div>
+  <div class="hdr-contact">
+    <a href="mailto:maherichardschmidt@gmail.com">maherichardschmidt@gmail.com</a><br>
+    <a href="tel:+33671451971">+33 6 71 45 19 71</a>
+  </div>
+</header>
+
+<!-- Projects -->
+<div id="projects"></div>
+<div id="footer"></div>
+
 <script>
-// ─────────────────────────────────────────────────────
-// ↓↓↓  TES VIDÉOS  ↓↓↓
-const videos = [
-  { id: "XYP9Ufletss", title: "POUF", real: "Mahé RICHARD-SCHMIDT", year: "2025" },
-  { id: "I80fSVbp-eE", title: "Neoma", real: "Nicolas ROMIEU", year: "2023" },  
-  { id: "muCyrhqdBwA", title: "Garage LMR", real: "Nicolas ROMIEU", year: "2023" },  
-  { id: "XqMseG4eQ9o", title: "Renée Costes", real: "Nicolas ROMIEU", year: "2023" },
-  { id: "XTDjJ9pvYJI", title: "Albert Koski", real: "Nicolas ROMIEU", year: "2022" },  
-  { id: "VEVohpQye-I", title: "Crash au Mali", year: "2023" },
-  { id: "nUmqWk7Q4no", title: "Luke Anger - Continuum", real: "Nicolas ROMIEU", year: "2023", },
-  { id: "TVLk2qBD0DM", title: "La chine et le Ping-Pong", year: "2024" },
-  { id: "Nog0dxvLhQY", title: "Murphy X Frank Takuma - Centaines de roses", real: "Léo VIEIRA", year: "2024" },
+// ═══════════════════════════════════════════════════
+// ↓↓↓  TES PROJETS — modifie ici  ↓↓↓
+//
+// clip: chemin vers ton fichier vidéo ou gif (ex: "clips/pouf.mp4")
+//       → mets tes fichiers dans un dossier /clips/ à côté de index.html
+//
+// Pour la page projet, chaque entrée génère un lien vers project.html?id=xxx
+// ═══════════════════════════════════════════════════
+const projects = [
+  {
+    id: "pouf",
+    title: "POUF",
+    real: "Mahé RICHARD-SCHMIDT",
+    year: "2025",
+    clip: "clips/pouf.mp4",          // ← remplace par ton fichier
+    youtubeId: "XYP9Ufletss",
+  },
+  {
+    id: "neoma",
+    title: "Neoma",
+    real: "Nicolas ROMIEU",
+    year: "2023",
+    clip: "clips/neoma.mp4",
+    youtubeId: "I80fSVbp-eE",
+  },
+  {
+    id: "garage-lmr",
+    title: "Garage LMR",
+    real: "Nicolas ROMIEU",
+    year: "2023",
+    clip: "clips/garage-lmr.mp4",
+    youtubeId: "muCyrhqdBwA",
+  },
+  {
+    id: "renee-costes",
+    title: "Renée Costes",
+    real: "Nicolas ROMIEU",
+    year: "2023",
+    clip: "clips/renee-costes.mp4",
+    youtubeId: "XqMseG4eQ9o",
+  },
+  {
+    id: "albert-koski",
+    title: "Albert Koski",
+    real: "Nicolas ROMIEU",
+    year: "2022",
+    clip: "clips/albert-koski.mp4",
+    youtubeId: "XTDjJ9pvYJI",
+  },
+  {
+    id: "crash-mali",
+    title: "Crash au Mali",
+    real: "",
+    year: "2023",
+    clip: "clips/crash-mali.mp4",
+    youtubeId: "VEVohpQye-I",
+  },
+  {
+    id: "luke-anger",
+    title: "Luke Anger — Continuum",
+    real: "Nicolas ROMIEU",
+    year: "2023",
+    clip: "clips/luke-anger.mp4",
+    youtubeId: "nUmqWk7Q4no",
+  },
+  {
+    id: "chine-ping-pong",
+    title: "La Chine et le Ping-Pong",
+    real: "",
+    year: "2024",
+    clip: "clips/chine-ping-pong.mp4",
+    youtubeId: "TVLk2qBD0DM",
+  },
+  {
+    id: "centaines-de-roses",
+    title: "Murphy × Frank Takuma",
+    real: "Léo VIEIRA",
+    year: "2024",
+    clip: "clips/centaines-de-roses.mp4",
+    youtubeId: "Nog0dxvLhQY",
+  },
 ];
-// ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 
-const N         = videos.length;
-const acc       = document.getElementById('acc');
-const infoTitle  = document.getElementById('info-title');
-const infoArtist = document.getElementById('info-artist');
-const infoMeta   = document.getElementById('info-meta');
-const accWrap    = document.getElementById('acc-wrap');
+// Build project strips
+const container = document.getElementById('projects');
 
-// 2. Génère les couleurs de dégradé blanc → noir réparties sur N panneaux
-function panelColor(i) {
-  const light = Math.round(255 - (i / (N - 1)) * 255);
-  return `rgb(${light},${light},${light})`;
-}
+projects.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'project';
+  el.dataset.id = p.id;
 
-// Build panels
-const panels = videos.map((v, i) => {
-  const panel = document.createElement('div');
-  panel.className = 'panel';
-  panel.style.animationDelay = `${i * 0.045}s`;
+  // Media (video or gif)
+  const isGif = p.clip && p.clip.endsWith('.gif');
+  let media;
+  if (isGif) {
+    media = document.createElement('img');
+    media.src = p.clip;
+    media.alt = p.title;
+  } else {
+    media = document.createElement('video');
+    media.src = p.clip;
+    media.autoplay = true;
+    media.muted = true;
+    media.loop = true;
+    media.playsInline = true;
+    media.preload = 'metadata';
+  }
+  media.className = 'project-media';
 
-  // Bloc couleur (remplace miniature)
-  const colorBlock = document.createElement('div');
-  colorBlock.className = 'panel-color';
-  colorBlock.style.background = panelColor(i);
+  // Overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'project-overlay';
 
-  // iframe
-  const iframeWrap = document.createElement('div');
-  iframeWrap.className = 'panel-iframe';
-  const iframe = document.createElement('iframe');
-  iframe.src = `https://www.youtube.com/embed/${v.id}?autoplay=1&mute=1&loop=1&playlist=${v.id}&controls=0&modestbranding=1&rel=0&showinfo=0`;
-  iframe.allow = 'autoplay; encrypted-media';
-  iframe.allowFullscreen = true;
-  iframe.title = v.title;
-  iframeWrap.appendChild(iframe);
+  // Index number
+  const idx = document.createElement('div');
+  idx.className = 'project-index';
+  idx.textContent = String(i + 1).padStart(2, '0');
 
-  // Vertical label
-  const label = document.createElement('div');
-  label.className = 'panel-vlabel';
-  label.textContent = v.title;
+  // Info
+  const info = document.createElement('div');
+  info.className = 'project-info';
 
-  panel.appendChild(colorBlock);
-  panel.appendChild(iframeWrap);
-  panel.appendChild(label);
-  acc.appendChild(panel);
-  return panel;
-});
+  const title = document.createElement('div');
+  title.className = 'project-title';
+  title.textContent = p.title;
 
-// ── Width logic ──
-function setWidths(activeIdx) {
-  const total  = accWrap.offsetWidth;
-  const ratio  = 16 / 9;
-  const h      = accWrap.offsetHeight;
-  const activeW = Math.min(Math.round(ratio * h), Math.round(total * 0.78));
-  const restW   = Math.round((total - activeW) / (N - 1));
+  const meta = document.createElement('div');
+  meta.className = 'project-meta';
+  if (p.real) meta.innerHTML = `Réal. ${p.real}<br>${p.year}`;
+  else meta.textContent = p.year;
 
-  panels.forEach((p, i) => {
-    if (activeIdx === null) {
-      p.style.width = (total / N) + 'px';
-      p.classList.remove('active');
-    } else if (i === activeIdx) {
-      p.style.width = activeW + 'px';
-      p.classList.add('active');
-    } else {
-      p.style.width = restW + 'px';
-      p.classList.remove('active');
-    }
+  info.appendChild(title);
+  info.appendChild(meta);
+
+  // CTA
+  const cta = document.createElement('div');
+  cta.className = 'project-cta';
+  cta.textContent = 'Voir le projet';
+
+  // Overlay for cursor (prevents iframe-like issues with video)
+  const pointerOverlay = document.createElement('div');
+  pointerOverlay.style.cssText = 'position:absolute;inset:0;z-index:5;cursor:none;';
+
+  el.appendChild(media);
+  el.appendChild(overlay);
+  el.appendChild(idx);
+  el.appendChild(info);
+  el.appendChild(cta);
+  el.appendChild(pointerOverlay);
+
+  // Click → project page
+  el.addEventListener('click', () => {
+    window.location.href = `project.html?id=${p.id}`;
   });
-}
 
-setWidths(null);
-
-// Mouse events
-panels.forEach((p, i) => {
-  p.addEventListener('mouseenter', () => {
-    setWidths(i);
-    infoTitle.textContent = videos[i].title;
-    infoMeta.innerHTML = videos[i].real
-      ? `Réal. ${videos[i].real}<br>${videos[i].year}`
-      : videos[i].year;
-    infoTitle.classList.add('on');
-    infoMeta.classList.add('on');
-    // 1. Artiste
-    if (videos[i].artist) {
-      infoArtist.textContent = videos[i].artist;
-      infoArtist.classList.add('on');
-    } else {
-      infoArtist.textContent = '';
-      infoArtist.classList.remove('on');
-    }
-  });
+  container.appendChild(el);
 });
-
-accWrap.addEventListener('mouseleave', () => {
-  setWidths(null);
-  infoTitle.classList.remove('on');
-  infoMeta.classList.remove('on');
-  infoArtist.classList.remove('on');
-});
-
-window.addEventListener('resize', () => setWidths(null));
 
 // ── Cursor ──
 const cursor = document.getElementById('cursor');
-
 document.addEventListener('mousemove', e => {
   cursor.style.left = e.clientX + 'px';
   cursor.style.top  = e.clientY + 'px';
 });
 
+// Cursor hover state on projects
+document.querySelectorAll('.project').forEach(p => {
+  p.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+  p.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+});
+
+// ── Parallax name — infinite loop scroll up ──
+const nameEl = document.getElementById('name-text');
+const nameWrap = document.getElementById('name-wrap');
+
+// Total scroll height of a single "name cycle" in px
+// We use window.innerHeight so one full scroll = one full cycle
+function updateName() {
+  const scrollY = window.scrollY;
+  const viewH = window.innerHeight;
+
+  // Move upward as user scrolls, loop with modulo
+  // Start at center (0), go up by scroll amount, loop every viewH px
+  const offset = scrollY % viewH;
+
+  // Map offset: 0 → center (0), viewH → top (-viewH)
+  // then jump back to bottom (+viewH) seamlessly
+  let y = -offset;
+
+  // If we're past halfway through cycle, show coming from bottom
+  // This creates the illusion of continuous looping
+  nameEl.style.transform = `translateY(${y}px)`;
+
+  // When offset is near 0 (just looped), briefly show from bottom
+  // We add a ghost element approach: duplicate translateY
+  if (offset > viewH * 0.85) {
+    // Blend: current going off top + next coming from bottom
+    // We use a wrapper trick: show at y AND y + viewH
+    nameEl.style.transform = `translateY(${y}px)`;
+  }
+}
+
+// Use two elements to fake infinite loop
+const nameEl2 = nameEl.cloneNode(true);
+nameEl2.id = 'name-text-2';
+nameEl2.style.position = 'absolute';
+nameWrap.appendChild(nameEl2);
+
+function updateNameLoop() {
+  const scrollY = window.scrollY;
+  const viewH = window.innerHeight;
+
+  const offset = scrollY % viewH;
+  const y1 = offset;             // descend quand on scroll vers le bas
+  const y2 = offset - viewH;    // le doublon arrive par le haut pour la boucle
+
+  nameEl.style.transform  = `translateY(${y1}px)`;
+  nameEl2.style.transform = `translateY(${y2}px)`;
+}
+
+window.addEventListener('scroll', updateNameLoop, { passive: true });
+updateNameLoop();
+
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Projet — Mahé Richard-Schmidt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400&family=Outfit:wght@100;200&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a09;
+      --white: #f0ede8;
+      --muted: #555550;
+      --accent: #c8b89a;
+      --line: #1e1e1c;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'DM Mono', monospace;
+      cursor: none;
+      overflow: hidden;
+    }
+
+    /* ── Custom cursor ── */
+    #cursor {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      left: -80px; top: -80px;
+      transform: translate(-50%, -50%);
+    }
+    #cursor::before, #cursor::after {
+      content: "";
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 32px; height: 2px;
+      background: rgba(255,255,255,0.9);
+      transform-origin: center;
+    }
+    #cursor::before { transform: translate(-50%, -50%) rotate(45deg); }
+    #cursor::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+
+    /* ── Layout ── */
+    #shell {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    #topbar {
+      height: 72px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--line);
+      animation: fadeDown .5s ease both;
+    }
+    @keyframes fadeDown {
+      from { opacity:0; transform: translateY(-10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    #back-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: .62rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+      cursor: none;
+    }
+    #back-btn:hover { color: var(--white); }
+    #back-btn::before { content: '←'; font-size: 1rem; }
+
+    #project-title-bar {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: .08em;
+      color: var(--white);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #project-meta-bar {
+      font-size: .6rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: right;
+      line-height: 2;
+    }
+
+    /* ── Video area ── */
+    #video-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn .6s ease .15s both;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; }
+      to   { opacity:1; }
+    }
+
+    #video-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── Bottom bar ── */
+    #bottombar {
+      height: 52px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-top: 1px solid var(--line);
+      animation: fadeUp .5s ease .1s both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .bottombar-label {
+      font-size: .58rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Prev / Next navigation */
+    #nav-btns {
+      display: flex;
+      gap: 32px;
+    }
+    .nav-btn {
+      font-size: .6rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: none;
+      transition: color .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-btn:hover { color: var(--white); }
+    .nav-btn.prev::before { content: '←'; }
+    .nav-btn.next::after  { content: '→'; }
+
+    /* 404 state */
+    #not-found {
+      display: none;
+      position: fixed; inset: 0;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--muted);
+      letter-spacing: .1em;
+    }
+    #not-found a {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<div id="not-found">
+  Projet introuvable
+  <a href="index.html">← Retour</a>
+</div>
+
+<div id="shell">
+  <div id="topbar">
+    <a id="back-btn" href="index.html">Retour</a>
+    <div id="project-title-bar"></div>
+    <div id="project-meta-bar"></div>
+  </div>
+
+  <div id="video-wrap">
+    <iframe id="yt-player" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+  </div>
+
+  <div id="bottombar">
+    <div class="bottombar-label">Mahé Richard-Schmidt — Monteur Vidéo</div>
+    <div id="nav-btns"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// Même liste que dans index.html — garde-les synchronisées
+// ═══════════════════════════════════════════════════
+const projects = [
+  { id: "pouf",              title: "POUF",                          real: "Mahé RICHARD-SCHMIDT", year: "2025", youtubeId: "XYP9Ufletss" },
+  { id: "neoma",             title: "Neoma",                         real: "Nicolas ROMIEU",       year: "2023", youtubeId: "I80fSVbp-eE" },
+  { id: "garage-lmr",        title: "Garage LMR",                    real: "Nicolas ROMIEU",       year: "2023", youtubeId: "muCyrhqdBwA" },
+  { id: "renee-costes",      title: "Renée Costes",                  real: "Nicolas ROMIEU",       year: "2023", youtubeId: "XqMseG4eQ9o" },
+  { id: "albert-koski",      title: "Albert Koski",                  real: "Nicolas ROMIEU",       year: "2022", youtubeId: "XTDjJ9pvYJI" },
+  { id: "crash-mali",        title: "Crash au Mali",                 real: "",                     year: "2023", youtubeId: "VEVohpQye-I" },
+  { id: "luke-anger",        title: "Luke Anger — Continuum",        real: "Nicolas ROMIEU",       year: "2023", youtubeId: "nUmqWk7Q4no" },
+  { id: "chine-ping-pong",   title: "La Chine et le Ping-Pong",      real: "",                     year: "2024", youtubeId: "TVLk2qBD0DM" },
+  { id: "centaines-de-roses",title: "Murphy × Frank Takuma",         real: "Léo VIEIRA",           year: "2024", youtubeId: "Nog0dxvLhQY" },
+];
+
+// Parse URL param
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+const idx = projects.findIndex(p => p.id === id);
+
+if (idx === -1) {
+  document.getElementById('shell').style.display = 'none';
+  document.getElementById('not-found').style.display = 'flex';
+} else {
+  const p = projects[idx];
+
+  // Title & meta
+  document.title = `${p.title} — Mahé Richard-Schmidt`;
+  document.getElementById('project-title-bar').textContent = p.title;
+  const meta = document.getElementById('project-meta-bar');
+  if (p.real) meta.innerHTML = `Réal. ${p.real}<br>${p.year}`;
+  else meta.textContent = p.year;
+
+  // YouTube embed
+  const player = document.getElementById('yt-player');
+  player.src = `https://www.youtube.com/embed/${p.youtubeId}?autoplay=1&rel=0&modestbranding=1`;
+
+  // Prev / Next
+  const nav = document.getElementById('nav-btns');
+  if (idx > 0) {
+    const prev = projects[idx - 1];
+    const a = document.createElement('a');
+    a.className = 'nav-btn prev';
+    a.href = `project.html?id=${prev.id}`;
+    a.textContent = prev.title;
+    nav.appendChild(a);
+  }
+  if (idx < projects.length - 1) {
+    const next = projects[idx + 1];
+    const a = document.createElement('a');
+    a.className = 'nav-btn next';
+    a.href = `project.html?id=${next.id}`;
+    a.textContent = next.title;
+    nav.appendChild(a);
+  }
+}
+
+// ── Cursor ──
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
 </script>
 </body>
 </html>
